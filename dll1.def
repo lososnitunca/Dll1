@@ -1,0 +1,7 @@
+LIBRARY DLL1
+
+EXPORTS
+
+    MtSrvAbout             @1
+    MtSrvStartup           @2
+	MtSrvTradesAdd         @3
