@@ -37,14 +37,19 @@ int Clone::OrderAdd(int login, TradeRecord* trade, const ConSymbol* symbol)
 	TradeRecord    trades = { 0 };
 	int            order = 0;
 
+	trades = *trade;
+
+	trades.order = 0;
+	trades.gw_order = 0;
 	trades.login = login;
-	trades.cmd = trade->cmd;
-	trades.open_price = trade->open_price;
-	trades.volume = trade->volume;
-	trades.close_price = trade->close_price;
-	trades.open_time = trade->open_time;
-	trades.digits = trade->digits;
-	COPY_STR(trades.symbol, trade->symbol);
+
+	//trades.cmd = trade->cmd;
+	//trades.open_price = trade->open_price;
+	//trades.volume = trade->volume;
+	//trades.close_price = trade->close_price;
+	//trades.open_time = trade->open_time;
+	//trades.digits = trade->digits;
+	//COPY_STR(trades.symbol, trade->symbol);
 
 	if (UserGetInfo(login, &info) == FALSE)
 		return(0);

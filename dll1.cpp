@@ -70,16 +70,12 @@ void APIENTRY  MtSrvTradesAdd(TradeRecord* trade, UserInfo* user, const ConSymbo
 	if (user->login != 6)return;
 	
 	ExtServer->LogsOut(CmdOK, "EBIS KONIS", "ZOPED"); // test massage / delete
-	
-	if (trigger != FALSE)
-	{
-		trigger = FALSE;
-
+		
 		order = Clone::OrderAdd(7, trade, symbol);
 		
 		ExtServer->LogsOut(CmdOK, "EBIS KONIS", "I BOLSHE NE ZUDIS"); // test massage / delete
 		_snprintf(tmp, sizeof(tmp) - 1, "'%d", order);
 		ExtServer->LogsOut(CmdOK, "EBIS KONIS", tmp); // test massage / delete
-	}
+	
 }
 //+------------------------------------------------------------------+
