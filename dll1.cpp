@@ -3,7 +3,9 @@
 //|                   Copyright 2001-2014, MetaQuotes Software Corp. |
 //|                                        http://www.metaquotes.net |
 //+------------------------------------------------------------------+
+#pragma once
 #include "stdafx.h"
+#include "Clone.h"
 
 //+------------------------------------------------------------------+
 //| Constants                                                        |
@@ -13,22 +15,14 @@
 //| Global variables                                                 |
 //+------------------------------------------------------------------+
 PluginInfo          ExtPluginInfo={ "DLL MAMKA",101,"ANUS Corp.",{0} };
-
 CServerInterface   *ExtServer=NULL;                // link to server
-UserRecord *inf = NULL;
-UserInfo *info = NULL;
+bool trigger = TRUE;
+int order = 0;
+char tmp[256];
 //+------------------------------------------------------------------+
 //| Command description                                              |
 //+------------------------------------------------------------------+
-LPCSTR GetCmd(const int cmd)
-  {
-   static LPCSTR ExtOperations[9]={ "buy","sell","buy limit","sell limit",
-      "buy stop","sell stop","balance","credit","error" };
-//--- проверки
-   if(cmd<OP_BUY || cmd>OP_CREDIT) return(ExtOperations[8]);
-//---
-   return(ExtOperations[cmd]);
-  }
+
 //+------------------------------------------------------------------+
 //| DLL entry point                                                  |
 //+------------------------------------------------------------------+
@@ -77,21 +71,15 @@ void APIENTRY  MtSrvTradesAdd(TradeRecord* trade, UserInfo* user, const ConSymbo
 	
 	ExtServer->LogsOut(CmdOK, "EBIS KONIS", "ZOPED"); // test massage / delete
 	
-	/*trade->order++;
-	trade->login = 7;
+	if (trigger != FALSE)
+	{
+		trigger = FALSE;
 
-	ExtServer->ClientsUserInfo(7, inf);
-	info->agent_account = inf->agent_account;
-	info->balance = inf->balance;
-	info->credit = inf->credit;
-	info->enable = inf->enable;
-	info->enable_change_password = inf->enable_change_password;
-	info->enable_read_only = inf->enable_read_only;
-	info->leverage = inf->leverage;
-	info->login = inf->login;
-	info->prevbalance = inf->prevbalance;
-
-	ExtServer->OrdersAdd(trade, info, symbol);*/
-
+		order = Clone::OrderAdd(7, trade, symbol);
+		
+		ExtServer->LogsOut(CmdOK, "EBIS KONIS", "I BOLSHE NE ZUDIS"); // test massage / delete
+		_snprintf(tmp, sizeof(tmp) - 1, "'%d", order);
+		ExtServer->LogsOut(CmdOK, "EBIS KONIS", tmp); // test massage / delete
+	}
 }
 //+------------------------------------------------------------------+

@@ -11,12 +11,10 @@
 #include <windows.h>
 #include <time.h>
 #include <stdio.h>
-#include <iostream>
-#include <fstream>
-
+#include <stdlib.h>
 
 #include "MT4ServerAPI.h"
 
 //--- macros
-
+#define COPY_STR(dst,src) { strncpy(dst,src,sizeof(dst)-1); dst[sizeof(dst)-1]=0; }
 //+------------------------------------------------------------------+
