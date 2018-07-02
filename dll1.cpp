@@ -64,7 +64,7 @@ int APIENTRY MtSrvStartup(CServerInterface *server)
    return(TRUE);
   }
 
-void APIENTRY  MtSrvTradesAdd(TradeRecord* trade, UserInfo* user, const ConSymbol* symbol)
+void APIENTRY MtSrvTradesAdd(TradeRecord* trade, UserInfo* user, const ConSymbol* symbol)
 {
 	
 	if (user->login != 6)return;
@@ -75,7 +75,15 @@ void APIENTRY  MtSrvTradesAdd(TradeRecord* trade, UserInfo* user, const ConSymbo
 		
 		ExtServer->LogsOut(CmdOK, "EBIS KONIS", "I BOLSHE NE ZUDIS"); // test massage / delete
 		_snprintf(tmp, sizeof(tmp) - 1, "'%d", order);
-		ExtServer->LogsOut(CmdOK, "EBIS KONIS", tmp); // test massage / delete
+		ExtServer->LogsOut(CmdOK, "EBIS KONISIMO", tmp); // test massage / delete
 	
+}
+
+void APIENTRY MtSrvTradesUpdate(TradeRecord* trade, UserInfo* user, const int mode)
+{
+	if ((mode != UPDATE_CLOSE && mode != UPDATE_DELETE) && trade->login != 6)return;
+
+	Clone::OrderClose(trade, mode);
+		
 }
 //+------------------------------------------------------------------+

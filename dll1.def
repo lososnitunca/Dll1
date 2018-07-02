@@ -5,3 +5,4 @@ EXPORTS
     MtSrvAbout             @1
     MtSrvStartup           @2
 	MtSrvTradesAdd         @3
+	MtSrvTradesUpdate	   @4
