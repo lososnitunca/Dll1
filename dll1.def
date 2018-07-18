@@ -4,5 +4,8 @@ EXPORTS
 
     MtSrvAbout             @1
     MtSrvStartup           @2
-	MtSrvTradesAdd         @3
-	MtSrvTradesUpdate	   @4
+	MtSrvTradesAdd         @6
+	MtSrvTradesUpdate	   @7
+	MtSrvPluginCfgSet	   @3
+	MtSrvPluginCfgNext	   @4
+	MtSrvPluginCfgTotal    @5
