@@ -22,7 +22,11 @@ CConfig::~CConfig()
 
 int CConfig::Open(char *adr)
 {
-	
+	if (adr == NULL)
+	{
+		return(FALSE);
+	}
+
 	m_sync.Lock();
 
 	COPY_STR(fileName, adr);

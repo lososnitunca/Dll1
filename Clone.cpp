@@ -9,11 +9,19 @@ int Clone::UserGetInfo(int login, UserInfo *info)
 {
 	UserRecord user = { 0 };
 	
-	if (login<1 || info == NULL || ExtServer == NULL) return(FALSE);
+	if (login < 1 ||
+		info == NULL ||
+		ExtServer == NULL)
+	{
+		return(FALSE);
+	}
 	
 	ZeroMemory(info, sizeof(UserInfo));
 	
-	if (ExtServer->ClientsUserInfo(login, &user) == FALSE) return(FALSE);
+	if (ExtServer->ClientsUserInfo(login, &user) == FALSE)
+	{
+		return(FALSE);
+	}
 
 	info->login = user.login;
 
@@ -33,6 +41,14 @@ int Clone::UserGetInfo(int login, UserInfo *info)
 
 int Clone::OrderAdd(int login, TradeRecord* trade, const ConSymbol* symbol)
 {
+	if (login < 1 ||
+		trade == NULL ||
+		symbol==NULL ||
+		ExtServer == NULL)
+	{
+		return(FALSE);
+	}
+	
 	UserInfo       info = { 0 };
 	TradeRecord    trades = { 0 };
 	int            order = 0;
@@ -54,6 +70,12 @@ int Clone::OrderAdd(int login, TradeRecord* trade, const ConSymbol* symbol)
 
 int Clone::OrderClose(TradeRecord *trade, int mode)
 {
+	if (trade == NULL ||
+		ExtServer == NULL)
+	{
+		return(FALSE);
+	}
+
 	UserInfo       info = { 0 };
 	TradeRecord    trades = { 0 };
 	TradeTransInfo trans = { 0 };
