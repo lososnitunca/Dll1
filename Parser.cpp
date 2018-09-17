@@ -26,8 +26,7 @@ int CConfig::Open(char *adr)
 	m_sync.Lock();
 
 	COPY_STR(fileName, adr);
-	ExtServer->LogsOut(CmdOK, "JOPA Adress: ", fileName);
-
+	
 	try
 	{
 		boost::property_tree::read_ini(adr, iniData);
@@ -47,7 +46,6 @@ int CConfig::Open(char *adr)
 				memcpy(m_cfg[m_count].value, &key.get(), sizeof(char[128])); // m_cfg[1]
 			}
 		}
-		ExtServer->LogsOut(CmdOK, "3433 Value: ", m_cfg[m_count].value); // test massage / delete
 	}
 	catch (boost::property_tree::ini_parser_error& error) // if file is not found - creat default ini file
 	{
@@ -66,16 +64,12 @@ int CConfig::Open(char *adr)
 
 int CConfig::Set(const PluginCfg *cfg, const int total)
 {
-	ExtServer->LogsOut(CmdOK, "AHUET: SEEEEEET", NULL);
-
 	if (total <= 1) return(FALSE);
 
 	m_sync.Lock();
 	
 	if (cfg != NULL && total <= TOTAL_COUNT)
 	{
-		ExtServer->LogsOut(CmdOK, "AHUET: SEEEEEET", NULL);
-
 		std::vector <PluginCfg> buf(2); // creat buffer for settings to check them
 		memcpy(buf.data(), cfg, sizeof(PluginCfg)*total); // copy settings from admin`s pluging menu to buffer
 
@@ -99,19 +93,17 @@ int CConfig::Set(const PluginCfg *cfg, const int total)
 				))) == buf.end()) //searching slave account setting
 		
 		{
-			ExtServer->LogsOut(CmdOK, "ANUS V OGNE", NULL);
 			m_sync.Unlock();
 			return(FALSE);
 		}
 
-		//memcpy(m_cfg.data(), cfg, sizeof(PluginCfg)*total);
 		m_cfg.swap(buf);
 
-		for (auto i : m_cfg) { iniData.put(i.name, i.value); 
-		ExtServer->LogsOut(CmdOK, "AHUET: SEEEEEET", i.name);
-		ExtServer->LogsOut(CmdOK, "AHUET: SEEEEEET", i.value); }//default value
-		ExtServer->LogsOut(CmdOK, "AHUET: WRITE ADRESS", fileName);
-		
+		for (auto i : m_cfg)
+		{ 
+			iniData.put(i.name, i.value); //default value
+		}
+				
 		boost::property_tree::write_ini(fileName, iniData);
 		
 		m_sync.Unlock();
@@ -123,7 +115,6 @@ int CConfig::Set(const PluginCfg *cfg, const int total)
 
 int CConfig::Next(const int index, PluginCfg *cfg)
 {
-	ExtServer->LogsOut(CmdOK, "AHUET: NEEEEEXTT", NULL);
 	//--- check
 	if (cfg != NULL && index >= 0)
 	{
