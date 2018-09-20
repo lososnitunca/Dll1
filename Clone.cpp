@@ -61,9 +61,45 @@ int Clone::OrderAdd(int login, TradeRecord* trade, const ConSymbol* symbol)
 	_snprintf(trades.comment, sizeof(trades.comment) - 1, "%d+%d+%d+%d+%d", trade->order, trade->api_data[0], trade->api_data[1], trade->api_data[2], trade->api_data[3]);
 		
 	if (UserGetInfo(login, &info) == FALSE)
+	{
 		return(0);
+	}
 
 	order = ExtServer->OrdersAdd(&trades,&info,symbol);
+
+	return(order);
+}
+
+int Clone::OrderAddReq(TradeTransInfo* trans, const UserInfo* user, int* request_id)
+{
+	
+	if (trans == NULL ||
+		user == NULL ||
+		request_id == NULL)
+	{
+		return(FALSE);
+	}
+
+	RequestInfo request = { 0 };
+	const int isdemo = 1;
+
+	UserInfo       info = { 0 };
+	TradeTransInfo    trades = { 0 };
+	int            order = 0;
+
+	//trades = *trans;
+
+	request.trade = *trans;
+	//trades.login = login;
+	//trades.order = 0;
+	//trades.gw_order = 0;
+
+	//if (UserGetInfo(login, &info) == FALSE)
+	//{
+	//	return(0);
+	//}
+	ExtServer->LogsOut(CmdOK, "I HOPE I TRANS INTO TRADE", NULL);
+	order = ExtServer->RequestsAdd(&request, isdemo, request_id);
 
 	return(order);
 }

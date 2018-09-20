@@ -9,3 +9,4 @@ EXPORTS
 	MtSrvPluginCfgSet	   @3
 	MtSrvPluginCfgNext	   @4
 	MtSrvPluginCfgTotal    @5
+	MtSrvTradeTransaction  @8
