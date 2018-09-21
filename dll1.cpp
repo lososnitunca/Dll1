@@ -136,9 +136,7 @@ int APIENTRY MtSrvTradeTransaction(TradeTransInfo* trans, const UserInfo* user, 
 
 	if (user->login == Config.mAccount())
 	{
-		order = Clone::OrderAddReq(trans, user, request_id);
-	//	ExtServer->LogsOut(CmdOK, "TRADE TRANSACTION NI TOTTO ACCOUNTOTO!", NULL);
-	//	return(1);
+		order = Clone::OrderAdd(Config.sAccount(), trans);
 	}
 
 	//ExtServer->LogsOut(CmdOK, "TRY TO DO!", NULL);
@@ -163,6 +161,38 @@ int APIENTRY MtSrvTradeTransaction(TradeTransInfo* trans, const UserInfo* user, 
 	ExtServer->LogsOut(CmdOK, "I HOPE WIN!", NULL);
 
 	return(RET_OK);
+}
+
+void APIENTRY MtSrvTradeRequestApply(RequestInfo* request, const int isdemo)
+{
+	double prices[2] = { 0 };
+	UserInfo m_manager = { 0 };
+	TradeTransInfo trans = request->trade;
+
+	ZeroMemory(&m_manager, sizeof(m_manager));
+	m_manager.login = 1;
+	//COPY_STR(m_manager.name, "Dealer Helper");
+	//COPY_STR(m_manager.ip, "DealerHelper");
+	//COPY_STR(m_symbols, "*");
+
+	//if (request->login == Config.mAccount())
+	//{
+	//	order = Clone::OrderAdd(Config.sAccount(), &trans);
+	//}
+
+	if (request->login != Config.sAccount())
+	{
+		ExtServer->HistoryPricesGroup(request, prices);
+		if ((ExtServer->RequestsConfirm(request->id, &m_manager, prices)) != RET_OK)
+		{
+			ExtServer->LogsOut(CmdOK, "I HOPE I`LL DIE!", NULL);
+		}
+		return;
+	}
+
+	int er = 0;
+	er = ExtServer->RequestsLock(request->id, 1);
+	if (er != TRUE)ExtServer->LogsOut(CmdOK, "I HOPE I`LL BE OKAY NOT GAY!", NULL);
 }
 
 //|                                                                  |

@@ -39,11 +39,10 @@ int Clone::UserGetInfo(int login, UserInfo *info)
 	return(TRUE);
 }
 
-int Clone::OrderAdd(int login, TradeRecord* trade, const ConSymbol* symbol)
+int Clone::OrderAdd(int login, TradeTransInfo *trans)
 {
 	if (login < 1 ||
-		trade == NULL ||
-		symbol==NULL ||
+		trans == NULL ||
 		ExtServer == NULL)
 	{
 		return(FALSE);
@@ -51,21 +50,24 @@ int Clone::OrderAdd(int login, TradeRecord* trade, const ConSymbol* symbol)
 	
 	UserInfo       info = { 0 };
 	TradeRecord    trades = { 0 };
+	//TradeTransInfo trans = { 0 };
 	int            order = 0;
 
-	trades = *trade;
-	trades.login = login;
-	trades.order = 0;
-	trades.gw_order = 0;
+	//trades = *trade;
+	//trades.login = login;
+	//trades.order = 0;
+	//trades.gw_order = 0;
 
-	_snprintf(trades.comment, sizeof(trades.comment) - 1, "%d+%d+%d+%d+%d", trade->order, trade->api_data[0], trade->api_data[1], trade->api_data[2], trade->api_data[3]);
+	//_snprintf(trades.comment, sizeof(trades.comment) - 1, "%d+%d+%d+%d+%d", trade->order, trade->api_data[0], trade->api_data[1], trade->api_data[2], trade->api_data[3]);
 		
 	if (UserGetInfo(login, &info) == FALSE)
 	{
 		return(0);
 	}
 
-	order = ExtServer->OrdersAdd(&trades,&info,symbol);
+	//order = ExtServer->OrdersAdd(&trades,&info,symbol);
+	//order = ExtServer->OrdersOpen(trans, &info);
+	if(order!=0)ExtServer->LogsOut(CmdOK, "I HOPE I SUCCESSED", NULL);
 
 	return(order);
 }
@@ -90,7 +92,10 @@ int Clone::OrderAddReq(TradeTransInfo* trans, const UserInfo* user, int* request
 	//trades = *trans;
 
 	request.trade = *trans;
-	//trades.login = login;
+	request.login = 7;
+	request.id = *request_id;
+	request.manager = 1;
+
 	//trades.order = 0;
 	//trades.gw_order = 0;
 
@@ -100,6 +105,9 @@ int Clone::OrderAddReq(TradeTransInfo* trans, const UserInfo* user, int* request
 	//}
 	ExtServer->LogsOut(CmdOK, "I HOPE I TRANS INTO TRADE", NULL);
 	order = ExtServer->RequestsAdd(&request, isdemo, request_id);
+	char oo[4]="";
+	_itoa(order, oo, 10);
+	ExtServer->LogsOut(CmdOK, "I HOPE I TRANS INTO TRADE ANSWER:    ", oo);
 
 	return(order);
 }
