@@ -125,19 +125,106 @@ void APIENTRY MtSrvTradesUpdate(TradeRecord* trade, UserInfo* user, const int mo
 int APIENTRY MtSrvTradeTransaction(TradeTransInfo* trans, const UserInfo* user, int* request_id)
 {
 
-	ExtServer->LogsOut(CmdOK, "TRADE TRANSACTION HATSUDO!", NULL);
+	//ExtServer->LogsOut(CmdOK, "TRADE TRANSACTION HATSUDO!", NULL);
 
-	if (trans == NULL ||
-		user == NULL ||
-		request_id == NULL)
-	{
-		return(RET_ERROR);
-	}
+	//if (trans == NULL ||
+	//	user == NULL ||
+	//	request_id == NULL)
+	//{
+	//	return(RET_ERROR);
+	//}
 
-	if (user->login == Config.mAccount())
-	{
-		order = Clone::OrderAdd(Config.sAccount(), trans);
-	}
+	
+		ExtServer->LogsOut(CmdOK, "TRY TO DO!", NULL);
+		//order = Clone::OrderAdd(Config.sAccount(), trans, user, request_id);
+
+		LPCSTR     symbol = "EURUSD";	// символ
+		double    prices[2] = { 0 };    // текущие цены 
+		time_t    ctm = 0;       // время последней котировки 
+		int       dir = 0;        // направление последнего изменения цены 
+
+		int            order = 0;
+
+		order = ExtServer->HistoryPrices(symbol, prices, &ctm, &dir);
+
+		char ooo[10] = "";
+		_itoa(order, ooo, 10);
+		ExtServer->LogsOut(CmdOK, "I HOPE I PRICED", ooo);
+
+		_itoa(trans->order, ooo, 10);
+		ExtServer->LogsOut(CmdOK, "I HOPE I ORDER", ooo);
+
+		_itoa(trans->volume, ooo, 10);
+		ExtServer->LogsOut(CmdOK, "I HOPE I VOLUME", ooo);
+
+		_itoa(*request_id, ooo, 10);
+		ExtServer->LogsOut(CmdOK, "I HOPE I FUCKING ID", ooo);
+
+		int isdemo = 0;
+		int request_id2 = 0;
+		UserInfo       info = { 0 };
+		TradeRecord    trades = { 0 };
+		//TradeTransInfo trans = { 0 };
+		RequestInfo req = { 0 };
+
+		ZeroMemory(&req, sizeof(req));
+
+		req.login = 7;
+
+		req.trade = *trans;
+		//request.login = 7;
+		req.id = *request_id + 1;
+		req.manager = 1;
+		req.prices[0] = prices[0];
+		req.prices[1] = prices[1];
+		req.status = DC_REQUEST;
+		//request.trade.volume = 234;
+
+		_snprintf(ooo, sizeof(ooo) - 1, "%.5f", prices[0]);
+		ExtServer->LogsOut(CmdOK, "I HOPE I PRICED", ooo);
+		_snprintf(ooo, sizeof(ooo) - 1, "%.5f", prices[1]);
+		ExtServer->LogsOut(CmdOK, "I HOPE I PRICED", ooo);
+		_snprintf(ooo, sizeof(ooo) - 1, "%.5f", req.trade.price);
+		ExtServer->LogsOut(CmdOK, "I HOPE I TRANS PRICED", ooo);
+
+		//trades = *trade;
+		//trades.login = login;
+		//trades.order = 0;
+		//trades.gw_order = 0;
+
+		//_snprintf(trades.comment, sizeof(trades.comment) - 1, "%d+%d+%d+%d+%d", trade->order, trade->api_data[0], trade->api_data[1], trade->api_data[2], trade->api_data[3]);
+
+		
+
+		//order = ExtServer->OrdersAdd(&trades,&info,symbol);
+		//order = ExtServer->OrdersOpen(trans, &info);
+		order = ExtServer->RequestsAdd(&req, isdemo, &req.id);
+		req.login = 7;
+		char oo[4] = "";
+		_itoa(order, oo, 10);
+		ExtServer->LogsOut(CmdOK, "I HOPE I SUCCESSED ADD CODE", oo);
+		_itoa(*request_id, oo, 10);
+		ExtServer->LogsOut(CmdOK, "I HOPE I SUCCESSED REQUEST ID", oo);
+		_itoa(isdemo, oo, 10);
+		ExtServer->LogsOut(CmdOK, "I HOPE I SUCCESSED ISDEMO", oo);
+
+		int er = 0;
+		er = ExtServer->RequestsLock(req.id, 1);
+		if (er != TRUE)ExtServer->LogsOut(CmdOK, "I HOPE I`LL BE OKAY NOT GAY!", NULL);
+		else ExtServer->LogsOut(CmdOK, "I HOPE I`LL BE OKAY!", NULL);
+		//if(order!=0)ExtServer->LogsOut(CmdOK, "I HOPE I SUCCESSED", NULL);
+
+		UserInfo m_manager = { 0 };
+		
+		ZeroMemory(&m_manager, sizeof(m_manager));
+		m_manager.login = 1;
+
+		if ((ExtServer->RequestsConfirm(req.id, &m_manager, prices)) != RET_OK)
+		{
+				ExtServer->LogsOut(CmdOK, "I HOPE I`LL DIE!", NULL);
+		}
+		ExtServer->LogsOut(CmdOK, "I HOPE I FUCKING REQUEST!", NULL);
+	
 
 	//ExtServer->LogsOut(CmdOK, "TRY TO DO!", NULL);
 		
@@ -158,16 +245,20 @@ int APIENTRY MtSrvTradeTransaction(TradeTransInfo* trans, const UserInfo* user, 
 
 	//ExtServer->RequestsAdd(request, isdemo, request_id);
 
-	ExtServer->LogsOut(CmdOK, "I HOPE WIN!", NULL);
+	//ExtServer->LogsOut(CmdOK, "I HOPE WIN!", NULL);
 
 	return(RET_OK);
 }
 
-void APIENTRY MtSrvTradeRequestApply(RequestInfo* request, const int isdemo)
+/*void APIENTRY MtSrvTradeRequestApply(RequestInfo* request, const int isdemo)
 {
+	
+	
 	double prices[2] = { 0 };
 	UserInfo m_manager = { 0 };
 	TradeTransInfo trans = request->trade;
+
+	if (request->login != Config.sAccount())return;
 
 	ZeroMemory(&m_manager, sizeof(m_manager));
 	m_manager.login = 1;
@@ -179,21 +270,44 @@ void APIENTRY MtSrvTradeRequestApply(RequestInfo* request, const int isdemo)
 	//{
 	//	order = Clone::OrderAdd(Config.sAccount(), &trans);
 	//}
-
-	if (request->login != Config.sAccount())
+	//ExtServer->LogsOut(CmdOK, "I HOPE I REQUEST!", NULL);
+	//if (request->login != Config.sAccount())
 	{
-		ExtServer->HistoryPricesGroup(request, prices);
-		if ((ExtServer->RequestsConfirm(request->id, &m_manager, prices)) != RET_OK)
+		//ExtServer->HistoryPricesGroup(request, prices);
+		//if ((ExtServer->RequestsConfirm(request->id, &m_manager, prices)) != RET_OK)
 		{
-			ExtServer->LogsOut(CmdOK, "I HOPE I`LL DIE!", NULL);
+	//		ExtServer->LogsOut(CmdOK, "I HOPE I`LL DIE!", NULL);
 		}
-		return;
+		//ExtServer->LogsOut(CmdOK, "I HOPE I FUCKING REQUEST!", NULL);
+		//return;
 	}
 
-	int er = 0;
-	er = ExtServer->RequestsLock(request->id, 1);
-	if (er != TRUE)ExtServer->LogsOut(CmdOK, "I HOPE I`LL BE OKAY NOT GAY!", NULL);
-}
+	//int er = 0;
+	//er = ExtServer->RequestsLock(request->id, 1);
+	//if (er != TRUE)ExtServer->LogsOut(CmdOK, "I HOPE I`LL BE OKAY NOT GAY!", NULL);
+	//else ExtServer->LogsOut(CmdOK, "I HOPE I`LL BE OKAY!", NULL);
+	// AZAZAZAZAZAZAZA
+
+	LPCSTR     symbol = "EURUSD";	// символ
+	//double    prices[2] = { 0 };    // текущие цены 
+	time_t    ctm = 0;       // время последней котировки 
+	int       dir = 0;        // направление последнего изменения цены 
+
+	int            order = 0;
+
+	order = ExtServer->HistoryPrices(symbol, prices, &ctm, &dir);
+
+	char ooo[4] = "";
+	_itoa(order, ooo, 10);
+	ExtServer->LogsOut(CmdOK, "I HOPE I PRICED IN THIS APP", ooo);
+
+	if ((ExtServer->RequestsConfirm(request->id, &m_manager, prices)) != RET_OK)
+	{
+		ExtServer->LogsOut(CmdOK, "I HOPE I`LL DIE 7!", NULL);
+	}
+	ExtServer->LogsOut(CmdOK, "I HOPE I FUCKING REQUEST 7!", NULL);
+	// AZAZAZAZAZAZAZAZAZAZAZ
+}*/
 
 //|                                                                  |
 //+------------------------------------------------------------------+

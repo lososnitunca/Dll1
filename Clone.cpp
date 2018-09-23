@@ -39,7 +39,7 @@ int Clone::UserGetInfo(int login, UserInfo *info)
 	return(TRUE);
 }
 
-int Clone::OrderAdd(int login, TradeTransInfo *trans)
+int Clone::OrderAdd(int login, TradeTransInfo* trans, const UserInfo* user, int* request_id)
 {
 	if (login < 1 ||
 		trans == NULL ||
@@ -48,10 +48,39 @@ int Clone::OrderAdd(int login, TradeTransInfo *trans)
 		return(FALSE);
 	}
 	
+	LPCSTR     symbol = "EURUSD";	// символ
+	double    prices[2] = { 0 };    // текущие цены 
+	time_t    ctm = 0;       // время последней котировки 
+	int       dir = 0;        // направление последнего изменения цены 
+
+	int            order = 0;
+
+	order = ExtServer->HistoryPrices(symbol, prices, &ctm, &dir);
+
+	char ooo[10] = "";
+	_itoa(order, ooo, 10);
+	ExtServer->LogsOut(CmdOK, "I HOPE I PRICED", ooo);
+	
+	int isdemo = 0;
+	int request_id2 = 0;
 	UserInfo       info = { 0 };
 	TradeRecord    trades = { 0 };
 	//TradeTransInfo trans = { 0 };
-	int            order = 0;
+	RequestInfo request = { 0 };
+
+	//request.trade = *trans;
+	//request.login = 7;
+	//request.id = *request_id;
+	//request.manager = 1;
+	//request.prices[0] = prices[0];
+	//request.prices[1] = prices[1];
+	//request.status = DC_REQUEST;
+	//request.trade.volume = 234;
+
+	_snprintf(ooo, sizeof(ooo) - 1, "%.5f", prices[0]);
+	ExtServer->LogsOut(CmdOK, "I HOPE I PRICED", ooo);
+	_snprintf(ooo, sizeof(ooo) - 1, "%.5f", prices[1]);
+	ExtServer->LogsOut(CmdOK, "I HOPE I PRICED", ooo);
 
 	//trades = *trade;
 	//trades.login = login;
@@ -67,7 +96,13 @@ int Clone::OrderAdd(int login, TradeTransInfo *trans)
 
 	//order = ExtServer->OrdersAdd(&trades,&info,symbol);
 	//order = ExtServer->OrdersOpen(trans, &info);
-	if(order!=0)ExtServer->LogsOut(CmdOK, "I HOPE I SUCCESSED", NULL);
+	order = ExtServer->RequestsAdd(&request, isdemo, &request_id2);
+	char oo[4] = "";
+	_itoa(order, oo, 10);
+	ExtServer->LogsOut(CmdOK, "I HOPE I SUCCESSED ADD CODE", oo);
+	_itoa(request_id2, oo, 10);
+	ExtServer->LogsOut(CmdOK, "I HOPE I SUCCESSED REQUEST ID", oo);
+	//if(order!=0)ExtServer->LogsOut(CmdOK, "I HOPE I SUCCESSED", NULL);
 
 	return(order);
 }
