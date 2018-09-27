@@ -20,7 +20,6 @@ CServerInterface   *ExtServer=NULL;                // link to server
 bool trigger = TRUE;
 int order = 0;
 char tmp[256];
-RequestInfo req = { 0 };
 
 //CConfig Config;
 //+------------------------------------------------------------------+
@@ -86,22 +85,6 @@ int APIENTRY MtSrvStartup(CServerInterface *server)
    return(TRUE);
   }
 
-void APIENTRY MtSrvTradesAdd(TradeRecord* trade, UserInfo* user, const ConSymbol* symbol)
-{
-	if (trade == NULL ||
-		user == NULL ||
-		symbol == NULL)
-	{
-		return;
-	}
-
-	if (user->login != Config.mAccount())
-	{
-	//	return;
-	}
-
-	//order = Clone::OrderAdd(Config.sAccount(), trade, symbol);
-}
 
 void APIENTRY MtSrvTradesUpdate(TradeRecord* trade, UserInfo* user, const int mode)
 {
@@ -125,130 +108,103 @@ void APIENTRY MtSrvTradesUpdate(TradeRecord* trade, UserInfo* user, const int mo
 
 int APIENTRY MtSrvTradeTransaction(TradeTransInfo* trans, const UserInfo* user, int* request_id)
 {
+	if (trans == NULL ||
+		user == NULL ||
+		request_id == NULL)
+	{
+		return(RET_ERROR);
+	}
 
-	//ExtServer->LogsOut(CmdOK, "TRADE TRANSACTION HATSUDO!", NULL);
-
-	//if (trans == NULL ||
-	//	user == NULL ||
-	//	request_id == NULL)
-	//{
-	//	return(RET_ERROR);
-	//}
-
+	if (user->login != Config.mAccount())
+	{
+		return(RET_OK);
+	}
 	
-		ExtServer->LogsOut(CmdOK, "TRY TO DO!", NULL);
-		//order = Clone::OrderAdd(Config.sAccount(), trans, user, request_id);
+	UserRecord suser = { 0 }; // struct for slave account info
 
-		LPCSTR     symbol = "EURUSD";	// символ
-		double    prices[2] = { 0 };    // текущие цены 
-		time_t    ctm = 0;       // время последней котировки 
-		int       dir = 0;        // направление последнего изменения цены 
+	ExtServer->ClientsUserInfo(Config.sAccount(), &suser);
 
-		int            order = 0;
+	RequestInfo req = { 0 };
 
-		order = ExtServer->HistoryPrices(symbol, prices, &ctm, &dir);
+	req.id = 0;
+	req.manager = 0;
+	req.status = DC_REQUEST;
+	req.time = GetTickCount();
 
-		char ooo[10] = "";
-		_itoa(order, ooo, 10);
-		ExtServer->LogsOut(CmdOK, "I HOPE I PRICED", ooo);
+	req.login = suser.login;
+	COPY_STR(req.group, suser.group);
+	req.credit = suser.credit;
+	req.balance = suser.balance;
 
-		_itoa(trans->order, ooo, 10);
-		ExtServer->LogsOut(CmdOK, "I HOPE I ORDER", ooo);
+	req.prices[0] = trans->price;
+	req.prices[1] = trans->price;
 
-		_itoa(trans->volume, ooo, 10);
-		ExtServer->LogsOut(CmdOK, "I HOPE I VOLUME", ooo);
+	req.trade.price = trans->price;
+	req.trade.type = trans->type;
+	req.trade.cmd = trans->cmd;
+	
+	req.trade.crc = trans->crc;
+	req.trade.expiration = trans->expiration;
 
-		_itoa(*request_id, ooo, 10);
-		ExtServer->LogsOut(CmdOK, "I HOPE I FUCKING ID", ooo);
-
-		int isdemo = 0;
-		//int request_id2 = 0;
-		UserInfo       info = { 0 };
-		//TradeTransInfo    trades = { 0 };
-		//trades = *trans;
-		//TradeTransInfo trans = { 0 };
-		//RequestInfo req = { 0 };
-		UserRecord suser = { 0 };
-
-		ExtServer->ClientsUserInfo(7, &suser);
+	req.trade.ie_deviation = trans->ie_deviation;
 		
-		ZeroMemory(&req, sizeof(req));
+	req.trade.orderby = suser.login;
 
-		req.id = 0;
-		req.manager = 0;
-		req.status = DC_REQUEST;
-		req.time = GetTickCount();
+	req.trade.volume = trans->volume;
+	COPY_STR(req.trade.symbol, trans->symbol);
+	COPY_STR(req.trade.comment, trans->comment);
 
-		//req.login = user->login;
-		//COPY_STR(req.group, user->group);
-		//req.credit = user->credit;
-		//req.balance = user->balance;
+	int req_id = 0;
 
-		req.login = suser.login;
-		COPY_STR(req.group, suser.group);
-		req.credit = suser.credit;
-		req.balance = suser.balance;
+	order = ExtServer->RequestsAdd(&req, FALSE, &req_id);
+	
+	if (order != RET_TRADE_ACCEPTED || req_id == 0)
+	{
+		ExtServer->LogsOut(CmdOK, "WE HAVE TROUBLE WITH APPLYING NEW REQUEST FOR SLAVE USER", NULL);
+	}
 
-
-		req.prices[0] = trans->price;
-		req.prices[1] = trans->price;
-
-		//req.trade = *trans;
-
-		req.trade.price = trans->price;
-		req.trade.type = trans->type;
-		//req.trade.type = TT_ORDER_MK_OPEN;
-		req.trade.cmd = trans->cmd;
-		//req.trade.cmd = OP_BUY;
-
-		req.trade.crc = trans->crc;		req.trade.expiration = trans->expiration;
-		req.trade.ie_deviation = trans->ie_deviation;
-		//req.trade.orderby = trans->orderby;
-		req.trade.orderby = suser.login;
-
-		req.trade.volume = trans->volume;
-		COPY_STR(req.trade.symbol, trans->symbol);
-		COPY_STR(req.trade.comment, trans->comment);
-
-		int request_id2 = 0;
-
-		
-		UserInfo m_manager = { 0 };
-
-		ZeroMemory(&m_manager, sizeof(m_manager));
-		m_manager.login = 1;
-
-
-		//order = ExtServer->OrdersAdd(&trades,&info,symbol);
-		//order = ExtServer->OrdersOpen(trans, &info);
-		order = ExtServer->RequestsAdd(&req, FALSE, &request_id2);
-		//req.login = 6;
-		char oo[4] = "";
-		_itoa(order, oo, 10);
-		ExtServer->LogsOut(CmdOK, "I HOPE I SUCCESSED ADD CODE", oo);
-		_itoa(request_id2, oo, 10);
-		ExtServer->LogsOut(CmdOK, "I HOPE I SUCCESSED REQUEST ID", oo);
-		
-		
 	return(RET_OK);
 }
 
 int APIENTRY MtSrvDealerConfirm(const int id, const UserInfo* us, double* prices)
 {
+	if (us == NULL ||
+		prices == NULL ||
+		id == 0)
+	{
+		return(FALSE);
+	}
 
-	ExtServer->LogsOut(CmdOK, "I HOPE I FUCKING DEALER CONFIRM", NULL);
+	ExtServer->LogsOut(CmdOK, "MtSrvDealerConfirm START", NULL);
 
-	if (id != req.id)return(TRUE);
+	int key = 0;    // ключ для определения новых запросов 
+	RequestInfo req = { 0 };     // массив запросов 
+	const int max = 1;      // максимально число запросов 
+	char ooo[4] = "";
+
+	order = ExtServer->RequestsGet(&key, &req, max);
+	if (order == 0)
+	{
+		_itoa(order, ooo, 4);
+		ExtServer->LogsOut(CmdOK, "REQUESTS: ", ooo);
+		return(TRUE);
+	}
+
+	if (req.login != Config.sAccount())
+	{
+		return(TRUE);
+	}
 
 	UserInfo info = { 0 };
+	Clone::UserGetInfo(Config.sAccount(), &info);
 
-	Clone::UserGetInfo(7, &info);
+	order = ExtServer->OrdersOpen(&(req.trade), &info);
+	if (order == 0)
+	{
+		ExtServer->LogsOut(CmdOK, "WE HAVE TROUBLE WITH OPENING NEW ORDER FOR SLAVE USER", NULL);
+	}
 
-	ExtServer->LogsOut(CmdOK, "I HOPE I FUCKING OPEN", NULL);
-
-	ExtServer->OrdersOpen(&(req.trade), &info);
-
-	ExtServer->RequestsDelete(id);
+	ExtServer->RequestsDelete(req.id);
 
 	return(TRUE);
 }
