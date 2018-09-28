@@ -119,7 +119,7 @@ int APIENTRY MtSrvTradeTransaction(TradeTransInfo* trans, const UserInfo* user, 
 	{
 		return(RET_OK);
 	}
-	
+
 	UserRecord suser = { 0 }; // struct for slave account info
 
 	ExtServer->ClientsUserInfo(Config.sAccount(), &suser);
@@ -166,6 +166,35 @@ int APIENTRY MtSrvTradeTransaction(TradeTransInfo* trans, const UserInfo* user, 
 	return(RET_OK);
 }
 
+/*void APIENTRY MtSrvTradeRequestApply(RequestInfo* request, const int isdemo)
+{
+
+	// confirm for master
+	if (request->login != Config.mAccount())
+	{
+		return;
+	}
+
+	LPCSTR symbol = "EURUSD";
+	double prices[2] = { 0 };
+	time_t ctm = 0;
+	int dir = 0;
+
+	order = ExtServer->HistoryPrices(symbol, prices, &ctm, &dir);
+
+	UserInfo m_manager = { 0 };
+	ZeroMemory(&m_manager, sizeof(m_manager));
+	m_manager.login = 1;
+
+	if ((ExtServer->RequestsConfirm(request->id, &m_manager, prices)) != RET_OK)
+	{
+		ExtServer->LogsOut(CmdOK, "I HOPE I`LL DIE!", NULL);
+	}
+
+	// END
+
+}*/
+
 int APIENTRY MtSrvDealerConfirm(const int id, const UserInfo* us, double* prices)
 {
 	if (us == NULL ||
@@ -189,6 +218,17 @@ int APIENTRY MtSrvDealerConfirm(const int id, const UserInfo* us, double* prices
 		ExtServer->LogsOut(CmdOK, "REQUESTS: ", ooo);
 		return(TRUE);
 	}
+
+	if (id != req.id)
+	{
+		return(TRUE);
+	}
+
+	_itoa(id, ooo, 4);
+	ExtServer->LogsOut(CmdOK, "CONST INT ID: ", ooo);
+
+	_itoa(req.id, ooo, 4);
+	ExtServer->LogsOut(CmdOK, "REQ_ID: ", ooo);
 
 	if (req.login != Config.sAccount())
 	{
