@@ -17,8 +17,6 @@
 //+------------------------------------------------------------------+
 PluginInfo          ExtPluginInfo={ "DLL MMK",101,"AN Corp.",{0} };
 CServerInterface   *ExtServer=NULL;                // link to server
-bool trigger = TRUE;
-char tmp[256];
 
 //CConfig Config;
 //+------------------------------------------------------------------+
@@ -31,6 +29,7 @@ char tmp[256];
 BOOL APIENTRY DllMain(HANDLE hModule,DWORD  ul_reason_for_call,LPVOID lpReserved)
   {
 //---
+	char tmp[256];
 	WCHAR  lpFilename[256];
 	char *cp;
 
@@ -45,7 +44,7 @@ BOOL APIENTRY DllMain(HANDLE hModule,DWORD  ul_reason_for_call,LPVOID lpReserved
 			  *cp = 0;
 			  strcat(tmp, ".ini");
 		  }
-
+		  Config.Open(tmp); //read or create ini file and settings: master and slave accounts
          break;
       case DLL_THREAD_ATTACH:
       case DLL_THREAD_DETACH:
@@ -79,7 +78,6 @@ int APIENTRY MtSrvStartup(CServerInterface *server)
 	}
    //--- save server interface link
    ExtServer=server;
-   Config.Open(tmp); //read or create ini file and settings: master and slave accounts
    //---
    return(TRUE);
   }
