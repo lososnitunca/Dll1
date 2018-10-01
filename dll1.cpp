@@ -18,7 +18,6 @@
 PluginInfo          ExtPluginInfo={ "DLL MMK",101,"AN Corp.",{0} };
 CServerInterface   *ExtServer=NULL;                // link to server
 bool trigger = TRUE;
-int order = 0;
 char tmp[256];
 
 //CConfig Config;
@@ -120,80 +119,12 @@ int APIENTRY MtSrvTradeTransaction(TradeTransInfo* trans, const UserInfo* user, 
 		return(RET_OK);
 	}
 
-	UserRecord suser = { 0 }; // struct for slave account info
-
-	ExtServer->ClientsUserInfo(Config.sAccount(), &suser);
-
-	RequestInfo req = { 0 };
-
-	req.id = 0;
-	req.manager = 0;
-	req.status = DC_REQUEST;
-	req.time = GetTickCount();
-
-	req.login = suser.login;
-	COPY_STR(req.group, suser.group);
-	req.credit = suser.credit;
-	req.balance = suser.balance;
-
-	req.prices[0] = trans->price;
-	req.prices[1] = trans->price;
-
-	req.trade.price = trans->price;
-	req.trade.type = trans->type;
-	req.trade.cmd = trans->cmd;
+	int order  = 0;
 	
-	req.trade.crc = trans->crc;
-	req.trade.expiration = trans->expiration;
-
-	req.trade.ie_deviation = trans->ie_deviation;
-		
-	req.trade.orderby = suser.login;
-
-	req.trade.volume = trans->volume;
-	COPY_STR(req.trade.symbol, trans->symbol);
-	COPY_STR(req.trade.comment, trans->comment);
-
-	int req_id = 0;
-
-	order = ExtServer->RequestsAdd(&req, FALSE, &req_id);
+	order = Clone::OrderRequest(trans);
 	
-	if (order != RET_TRADE_ACCEPTED || req_id == 0)
-	{
-		ExtServer->LogsOut(CmdOK, "WE HAVE TROUBLE WITH APPLYING NEW REQUEST FOR SLAVE USER", NULL);
-	}
-
 	return(RET_OK);
 }
-
-/*void APIENTRY MtSrvTradeRequestApply(RequestInfo* request, const int isdemo)
-{
-
-	// confirm for master
-	if (request->login != Config.mAccount())
-	{
-		return;
-	}
-
-	LPCSTR symbol = "EURUSD";
-	double prices[2] = { 0 };
-	time_t ctm = 0;
-	int dir = 0;
-
-	order = ExtServer->HistoryPrices(symbol, prices, &ctm, &dir);
-
-	UserInfo m_manager = { 0 };
-	ZeroMemory(&m_manager, sizeof(m_manager));
-	m_manager.login = 1;
-
-	if ((ExtServer->RequestsConfirm(request->id, &m_manager, prices)) != RET_OK)
-	{
-		ExtServer->LogsOut(CmdOK, "I HOPE I`LL DIE!", NULL);
-	}
-
-	// END
-
-}*/
 
 int APIENTRY MtSrvDealerConfirm(const int id, const UserInfo* us, double* prices)
 {
@@ -204,47 +135,8 @@ int APIENTRY MtSrvDealerConfirm(const int id, const UserInfo* us, double* prices
 		return(FALSE);
 	}
 
-	ExtServer->LogsOut(CmdOK, "MtSrvDealerConfirm START", NULL);
-
-	int key = 0;    // ключ для определения новых запросов 
-	RequestInfo req = { 0 };     // массив запросов 
-	const int max = 1;      // максимально число запросов 
-	char ooo[4] = "";
-
-	order = ExtServer->RequestsGet(&key, &req, max);
-	if (order == 0)
-	{
-		_itoa(order, ooo, 4);
-		ExtServer->LogsOut(CmdOK, "REQUESTS: ", ooo);
-		return(TRUE);
-	}
-
-	if (id != req.id)
-	{
-		return(TRUE);
-	}
-
-	_itoa(id, ooo, 4);
-	ExtServer->LogsOut(CmdOK, "CONST INT ID: ", ooo);
-
-	_itoa(req.id, ooo, 4);
-	ExtServer->LogsOut(CmdOK, "REQ_ID: ", ooo);
-
-	if (req.login != Config.sAccount())
-	{
-		return(TRUE);
-	}
-
-	UserInfo info = { 0 };
-	Clone::UserGetInfo(Config.sAccount(), &info);
-
-	order = ExtServer->OrdersOpen(&(req.trade), &info);
-	if (order == 0)
-	{
-		ExtServer->LogsOut(CmdOK, "WE HAVE TROUBLE WITH OPENING NEW ORDER FOR SLAVE USER", NULL);
-	}
-
-	ExtServer->RequestsDelete(req.id);
+	int order = 0;
+	order = Clone::OrderOpen(id);
 
 	return(TRUE);
 }
